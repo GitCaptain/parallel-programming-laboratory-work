@@ -9,14 +9,13 @@
 
 int valentines[MAX_THREADS_COUNT], luckers[MAX_THREADS_COUNT];
 unsigned int threads_cnt, year = 0;
-HANDLE arrive_sem, continue_sem;
+HANDLE arrive_sem[MAX_THREADS_COUNT], continue_sem[MAX_THREADS_COUNT];
 
 DWORD WINAPI serverTyan(PVOID p){
-
     while(year < 3){
-        int wait_arrive = 0;
-        while(wait_arrive < threads_cnt-1){
-            ReleaseSemaphore(arrive_sem, 0, &wait_arrive);
+
+        for(size_t i = 1; i < threads_cnt; ++i){
+            WaitForSingleObject(arrive_sem[i], -1);
         }
 
         int lucky_guy = 0;
@@ -28,8 +27,9 @@ DWORD WINAPI serverTyan(PVOID p){
 
         luckers[lucky_guy] = 1;
         year++;
-
-        ReleaseSemaphore(continue_sem, threads_cnt-1, NULL);
+        for(int i = 1; i < threads_cnt; ++i){
+            ReleaseSemaphore(continue_sem[i], 1, NULL);
+        }
     }
     return (DWORD)0;
 }
@@ -37,22 +37,15 @@ DWORD WINAPI serverTyan(PVOID p){
 DWORD WINAPI clientKun(PVOID p){
     unsigned int index = *((unsigned int*)p);
     int lucky = 0;
-    int continue_sem = 0;
     while(year < 3){
         valentines[index] = (rand() % (100 * index)) * rand(); // придумать ченить нормальное
-
-        ReleaseSemaphore(arrive_sem, 1, NULL);
-
-        while(continue_sem < threads_cnt-1){
-            ReleaseSemaphore(continue_sem, 0, &continue_sem);
-        };
-
+        ReleaseSemaphore(arrive_sem[index], 1, NULL);
+        WaitForSingleObject(continue_sem[index], -1);
         if(luckers[index]){
             lucky = 1;
             printf("Lucky guy number %d!\n", index);
         }
-
-        ReleaseSemaphore(continue_sem, -1, NULL);
+        ReleaseSemaphore(continue_sem[index], 1, NULL);
     }
     return (DWORD)lucky;
 }
@@ -69,8 +62,11 @@ int main(int argc, char **argv) {
     DWORD dwThreadsIds[MAX_THREADS_COUNT], dwWait, dwResults[MAX_THREADS_COUNT];
     HANDLE hThreads[MAX_THREADS_COUNT];
 
-    CreateSemaphoreA(arrive_sem, 0, threads_cnt-1, NULL);
-    CreateSemaphoreA(continue_sem, 0, threads_cnt-1, NULL);
+
+    for(size_t i = 1; i < threads_cnt; ++i) {
+        arrive_sem[i] = CreateSemaphoreA(NULL, 0, 1, NULL);
+        continue_sem[i] = CreateSemaphoreA(NULL, 0, 1, NULL);
+    }
 
     for(size_t i = 0; i < threads_cnt; ++i){
         thread_numbers[i] = i;
