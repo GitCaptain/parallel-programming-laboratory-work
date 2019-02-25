@@ -13,14 +13,10 @@ HANDLE arrive_sem[MAX_THREADS_COUNT], continue_sem[MAX_THREADS_COUNT];
 
 DWORD WINAPI serverTyan(PVOID p){
     while(year < 3){
-
-        for(size_t i = 1; i < threads_cnt; ++i){
-            WaitForSingleObject(arrive_sem[i], -1);
-        }
-
+        
+        WaitForMultipleObjects(threads_cnt-1, arrive_sem+1, 1, INFINITE);
         int lucky_guy = 0;
         for(size_t i = 1; i < threads_cnt; ++i){
-            luckers[i] = 0;
             if(valentines[i] > valentines[lucky_guy])
                 lucky_guy = i;
         }
@@ -42,8 +38,10 @@ DWORD WINAPI clientKun(PVOID p){
         ReleaseSemaphore(arrive_sem[index], 1, NULL);
         WaitForSingleObject(continue_sem[index], -1);
         if(luckers[index]){
-            lucky = 1;
+            lucky++;
+            luckers[index] = 0;
             printf("Lucky guy number %d!\n", index);
+            fflush(stdout);
         }
         ReleaseSemaphore(continue_sem[index], 1, NULL);
     }
@@ -86,9 +84,10 @@ int main(int argc, char **argv) {
     for(size_t i = 1; i < threads_cnt; ++i) {
         GetExitCodeThread(hThreads[i], &dwResults[i]);
         if((int)dwResults[i])
-            printf("thread %d was lucky.\n", i);
+            printf("thread %d was lucky %d times!.\n", i, (int)dwResults[i]);
         else
             printf("thread %d was not lucky.\n", i);
+        fflush(stdout);
     }
 
 
