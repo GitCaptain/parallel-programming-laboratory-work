@@ -159,6 +159,7 @@ int main() {
     WaitForSingleObject(start_writer, INFINITE);
     readers *= -1;
 
+    // что-то очень странное выводится, наверное это не стоит показывать при сдаче
     if((int)reader_res)
         printf("%d readers doesn't start\n", (int)reader_res);
     if((int)writer_res)
@@ -166,9 +167,3 @@ int main() {
 
     return 0;
 }
-
-/*
-HANDLE arrive_sem, continue_sem;
-CreateSemaphoreA(arrive_sem, 0, threads_cnt-1, NULL);
-CreateSemaphoreA(continue_sem, 0, threads_cnt-1, NULL);
-*/
