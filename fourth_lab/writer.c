@@ -85,8 +85,17 @@ int writer(int writer_num){
 int main(int argc, char** argv) {
     priority = READERS;
     HANDLE hDatabase, hProcessData, hDatabaseMap, hProcessDataMap;
-    printf("writer %s, readers_cnt %s\n", argv[2], argv[1]);
-    int readers = atoi(argv[1]), num = atoi(argv[2]);
+    int readers, num;
+    if(argc < 3) {
+        readers = 0;
+        num = 1;
+    }
+    else {
+        printf("writer %s, readers_cnt %s\n", argv[2], argv[1]);
+        readers = atoi(argv[1]), num = atoi(argv[2]);
+    }
+    //int readers = atoi(argv[1]), num = atoi(argv[2]);
+
     sem_write = CreateSemaphoreA(NULL, 0, 1, "w");
     sem_read = CreateSemaphoreA(NULL, 0, readers, "r");
     sem_enter = CreateSemaphoreA(NULL, 1, 1, "e");
