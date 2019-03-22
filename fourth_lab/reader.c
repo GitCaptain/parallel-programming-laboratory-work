@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <windows.h>
+#include <conio.h>
 
 enum users{READERS, WRITERS} priority;
 
@@ -70,6 +71,7 @@ int reader(int reader_num){
 int main(int argc, char** argv) {
     priority = READERS;
     HANDLE hDatabase, hProcessData, hDatabaseMap, hProcessDataMap;
+    printf("reader %s, readers_cnt %s\n", argv[2], argv[1]);
     int readers = atoi(argv[1]), num = atoi(argv[2]);
     sem_write = CreateSemaphoreA(NULL, 0, 1, "w");
     sem_read = CreateSemaphoreA(NULL, 0, readers, "r");
@@ -98,13 +100,13 @@ int main(int argc, char** argv) {
     proc_data = (int*)MapViewOfFile(hProcessDataMap, FILE_MAP_ALL_ACCESS , 0, 0, 4*sizeof(int));
     nw = &proc_data[0], nr = &proc_data[1], dw = &proc_data[2], dr = &proc_data[3];
 
-    /*
+
     printf("%d ", *bd_state);
     for(int i = 0; i < 4; ++i) {
         printf("%d ", proc_data[i]);
     }
     printf("\n");
-    */
+
     reader(num);
 
     UnmapViewOfFile((LPVOID)proc_data);
@@ -116,6 +118,7 @@ int main(int argc, char** argv) {
     CloseHandle(sem_enter);
     CloseHandle(sem_read);
     CloseHandle(sem_write);
-
+    printf("press any key for exit\n");
+    getch();
     return 0;
 }

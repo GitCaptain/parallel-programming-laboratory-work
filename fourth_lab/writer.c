@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <windows.h>
-
+#include <conio.h>
 
 enum users{READERS, WRITERS} priority;
 
@@ -85,6 +85,7 @@ int writer(int writer_num){
 int main(int argc, char** argv) {
     priority = READERS;
     HANDLE hDatabase, hProcessData, hDatabaseMap, hProcessDataMap;
+    printf("writer %s, readers_cnt %s\n", argv[2], argv[1]);
     int readers = atoi(argv[1]), num = atoi(argv[2]);
     sem_write = CreateSemaphoreA(NULL, 0, 1, "w");
     sem_read = CreateSemaphoreA(NULL, 0, readers, "r");
@@ -130,6 +131,7 @@ int main(int argc, char** argv) {
     CloseHandle(sem_enter);
     CloseHandle(sem_read);
     CloseHandle(sem_write);
-
+    printf("press any key for exit\n");
+    getch();
     return 0;
 }
